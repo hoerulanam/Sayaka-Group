@@ -83,6 +83,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/orders/{order}/items/{orderItem}/review', [ProductReviewController::class, 'store'])->name('orders.items.review.store');
     Route::get('/payment/{order}', [PaymentController::class, 'show'])->name('payment.show');
     Route::post('/payment/{order}/sync', [PaymentController::class, 'sync'])->name('payment.sync');
+    Route::post('/payment/{order}/repay', [PaymentController::class, 'repay'])->name('payment.repay');
+    Route::post('/payment/{order}/cancel', [PaymentController::class, 'cancel'])->name('payment.cancel');
     Route::get('/chat', [App\Http\Controllers\MessageController::class, 'index'])->name('chat.index');
     Route::post('/chat/send', [App\Http\Controllers\MessageController::class, 'send'])->name('chat.send');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

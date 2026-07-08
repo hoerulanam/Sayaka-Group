@@ -33,7 +33,7 @@
             @method('DELETE')
             <button type="submit" class="btn btn-danger">Hapus Pesan</button>
         </form>
-        <button type="button" class="btn btn-primary" onclick="window.location.href='mailto:{{ $contact->email }}'">Balas Email</button>
+        <a href="mailto:{{ $contact->email }}?subject={{ rawurlencode('Balasan dari Admin Sayaka Group') }}&body={{ rawurlencode("Halo {$contact->name},\n\nTerima kasih telah menghubungi kami.\n\n\n\n---\nPesan Anda sebelumnya:\n{$contact->message}") }}" class="btn btn-primary" style="text-decoration:none; padding:10px 20px; border-radius:6px; display:inline-block;">Balas Email</a>
     </div>
 </div>
 

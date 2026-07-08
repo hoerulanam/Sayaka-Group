@@ -63,12 +63,28 @@
                         </button>
                     @endif
 
-                    <form action="{{ route('payment.sync', $order) }}" method="POST" id="paymentSyncForm" style="display:inline;">
-                        @csrf
-                        <button type="submit" class="btn" style="background:#0f172a; color:#fff; border:none; padding:13px 22px; border-radius:999px; font-weight:800; cursor:pointer;">
-                            Sinkron Status
-                        </button>
-                    </form>
+                    @if($order->payment_status === 'expired')
+                        <form action="{{ route('payment.repay', $order) }}" method="POST" style="display:inline;">
+                            @csrf
+                            <button type="submit" class="btn btn-primary" style="border:none; padding:13px 22px; border-radius:999px; font-weight:800; cursor:pointer; background-color: #2563eb; color: white;">
+                                Pembayaran Ulang
+                            </button>
+                        </form>
+
+                        <form action="{{ route('payment.cancel', $order) }}" method="POST" style="display:inline;" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pesanan ini secara permanen?');">
+                            @csrf
+                            <button type="submit" class="btn" style="border:none; padding:13px 22px; border-radius:999px; font-weight:800; cursor:pointer; background-color: #ef4444; color: white;">
+                                Batalkan Pesanan
+                            </button>
+                        </form>
+                    @else
+                        <form action="{{ route('payment.sync', $order) }}" method="POST" id="paymentSyncForm" style="display:inline;">
+                            @csrf
+                            <button type="submit" class="btn" style="background:#0f172a; color:#fff; border:none; padding:13px 22px; border-radius:999px; font-weight:800; cursor:pointer;">
+                                Sinkron Status
+                            </button>
+                        </form>
+                    @endif
 
                     <a href="{{ route('orders.show', $order) }}" class="btn" style="background:#e2e8f0; color:#0f172a; padding:13px 22px; border-radius:999px; font-weight:800; text-decoration:none;">
                         Lihat Pesanan
