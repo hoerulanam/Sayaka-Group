@@ -45,12 +45,14 @@
             placeholder="Konfirmasi password baru">
     </div>
 
+    @if(auth()->user()->isSuperAdmin())
     <div class="form-group">
         <label for="is_admin">
             <input id="is_admin" name="is_admin" type="checkbox" value="1" {{ old('is_admin', $user->is_admin) ? 'checked' : '' }}>
             Admin (dapat mengakses panel admin)
         </label>
     </div>
+    @endif
 
     <div class="form-actions">
         <button type="submit" class="btn btn-primary">Update User</button>

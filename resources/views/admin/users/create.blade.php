@@ -43,12 +43,14 @@
             placeholder="Konfirmasi password" required>
     </div>
 
+    @if(auth()->user()->isSuperAdmin())
     <div class="form-group">
         <label for="is_admin">
-            <input id="is_admin" name="is_admin" type="checkbox" value="1" {{ old('is_admin') ? 'checked' : '' }}>
+            <input id="is_admin" name="is_admin" type="checkbox" value="1" {{ old('is_admin') || request('type') == 'admin' ? 'checked' : '' }}>
             Admin (dapat mengakses panel admin)
         </label>
     </div>
+    @endif
 
     <div class="form-actions">
         <button type="submit" class="btn btn-primary">Simpan User</button>

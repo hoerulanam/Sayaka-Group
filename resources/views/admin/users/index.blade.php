@@ -5,6 +5,9 @@
 @section('content')
 <div class="admin-actions">
     <a href="{{ route('admin.users.create') }}" class="btn btn-primary">+ Tambah User</a>
+    @if(auth()->user()->isSuperAdmin())
+        <a href="{{ route('admin.users.create', ['type' => 'admin']) }}" class="btn btn-success">+ Tambah Admin</a>
+    @endif
 </div>
 
 <table class="admin-table">
@@ -25,7 +28,9 @@
             <td>{{ $user->name }}</td>
             <td>{{ $user->email }}</td>
             <td>
-                @if($user->is_admin)
+                @if($user->isSuperAdmin())
+                    <span style="color:#2563eb; font-weight:bold;">Superadmin</span>
+                @elseif($user->is_admin)
                     <span style="color:#059669; font-weight:bold;">Admin</span>
                 @else
                     <span style="color:#6b7280;">User</span>
@@ -35,11 +40,13 @@
             <td class="actions">
                 <a href="{{ route('admin.users.show', $user->id) }}" class="btn btn-sm" style="background:#6b7280;color:#fff;padding:6px 12px;text-decoration:none;border-radius:4px;font-size:12px;">Lihat</a>
                 <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-sm btn-warning">Edit</a>
+                @if(!$user->isSuperAdmin())
                 <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" style="display:inline;" data-confirm-title="Hapus user?" data-confirm-text="User {{ $user->name }} akan dihapus.">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
                 </form>
+                @endif
             </td>
         </tr>
         @empty

@@ -39,6 +39,10 @@ class UserController extends Controller
             'is_admin' => 'boolean',
         ]);
 
+        if (!auth()->user()->isSuperAdmin()) {
+            $validated['is_admin'] = false;
+        }
+
         // Hash password
         $validated['password'] = Hash::make($validated['password']);
 
@@ -76,6 +80,10 @@ class UserController extends Controller
             'is_admin' => 'boolean',
         ]);
 
+        if (!auth()->user()->isSuperAdmin()) {
+            unset($validated['is_admin']);
+        }
+
         // Jika password diisi, hash; jika tidak, jangan update
         if (!empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
@@ -96,6 +104,15 @@ class UserController extends Controller
         // Cegah menghapus user yang sedang login
         if ($user->id === auth()->id()) {
             return redirect()->route('admin.users.index')->with('error', 'Tidak bisa menghapus user yang sedang login.');
+        }
+
+        // Tidak ada yang boleh menghapus Super Admin
+        if ($user->isSuperAdmin()) {
+            return redirect()->route('admin.users.index')->with('error', 'Akun Super Admin tidak boleh dihapus oleh siapapun.');
+        }
+
+        if (!auth()->user()->isSuperAdmin() && $user->isAdmin()) {
+            return redirect()->route('admin.users.index')->with('error', 'Anda tidak memiliki hak untuk menghapus akun Admin.');
         }
 
         $user->delete();

@@ -20,7 +20,9 @@
         <div style="margin-bottom:16px;">
             <h3 style="margin:0 0 8px; color:#444; font-size:14px; font-weight:600; text-transform:uppercase;">Role</h3>
             <p style="margin:0; color:#111; font-size:16px;">
-                @if($user->is_admin)
+                @if($user->isSuperAdmin())
+                    <span style="color:#2563eb; font-weight:bold;">Superadmin</span>
+                @elseif($user->is_admin)
                     <span style="color:#059669; font-weight:bold;">Admin</span>
                 @else
                     <span style="color:#6b7280;">User</span>
