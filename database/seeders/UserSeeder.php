@@ -23,6 +23,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password123'),
                 'email_verified_at' => now(),
                 'is_admin' => true,
+                'is_super_admin' => true,
             ]
         );
 
