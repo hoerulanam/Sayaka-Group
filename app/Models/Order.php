@@ -45,6 +45,29 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function returns()
+    {
+        return $this->hasMany(OrderReturn::class);
+    }
+
+    public function orderReturn()
+    {
+        return $this->hasOne(OrderReturn::class)->latestOfMany();
+    }
+
+    public function canBeReturned(): bool
+    {
+        if ($this->status !== 'received') {
+            return false;
+        }
+
+        $activeReturn = $this->returns()
+            ->whereIn('status', ['pending', 'approved', 'completed'])
+            ->exists();
+
+        return ! $activeReturn;
+    }
+
     public function displayCode(): string
     {
         $date = $this->created_at?->format('Ymd') ?? now()->format('Ymd');

@@ -375,14 +375,20 @@
 
                     loadSweetAlert()
                         .then(Swal => Swal.fire({
-                            icon: method === 'DELETE' ? 'warning' : 'question',
+                            icon: form.dataset.confirmIcon || (method === 'DELETE' ? 'warning' : (form.dataset.confirmTitle ? 'warning' : 'question')),
                             title: form.dataset.confirmTitle || (method === 'DELETE' ? 'Hapus data ini?' : 'Lanjutkan aksi?'),
                             text: form.dataset.confirmText || (method === 'DELETE' ? 'Data yang dihapus tidak dapat dikembalikan.' : 'Pastikan data sudah benar.'),
                             showCancelButton: true,
-                            confirmButtonText: method === 'DELETE' ? 'Ya, hapus' : 'Ya, lanjutkan',
-                            cancelButtonText: 'Batal',
-                            confirmButtonColor: method === 'DELETE' ? '#dc2626' : '#2563eb',
-                            cancelButtonColor: '#64748b'
+                            confirmButtonText: form.dataset.confirmButton || (method === 'DELETE' ? 'Ya, hapus' : 'Ya, batalkan'),
+                            cancelButtonText: form.dataset.cancelButton || 'Batal',
+                            confirmButtonColor: form.dataset.confirmColor || (method === 'DELETE' || form.dataset.confirmTitle?.includes('Batalkan') ? '#dc2626' : '#2563eb'),
+                            cancelButtonColor: '#64748b',
+                            customClass: {
+                                popup: 'sayaka-swal-popup',
+                                title: 'sayaka-swal-title',
+                                htmlContainer: 'sayaka-swal-text',
+                                confirmButton: 'sayaka-swal-confirm'
+                            }
                         }))
                         .then(result => {
                             if (result.isConfirmed) {

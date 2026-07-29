@@ -89,8 +89,8 @@ class PaymentController extends Controller
     {
         $this->authorizeOrderOwner($order);
 
-        if ($order->payment_status !== 'expired') {
-            return back()->with('error', 'Hanya pesanan kedaluwarsa yang bisa dibayar ulang.');
+        if (! in_array($order->payment_status, ['expired', 'failed', 'pending'], true)) {
+            return back()->with('error', 'Pesanan ini tidak bisa diperbarui pembayarannya.');
         }
 
         $newMidtransOrderId = $order->displayCode() . '-' . uniqid();
@@ -116,27 +116,16 @@ class PaymentController extends Controller
     {
         $this->authorizeOrderOwner($order);
 
-        if ($order->payment_status !== 'expired') {
-            return back()->with('error', 'Hanya pesanan kedaluwarsa yang bisa dibatalkan.');
+        if ($order->payment_status === 'paid' || $order->status === 'cancelled') {
+            return back()->with('error', 'Pesanan yang sudah dibayar atau dibatalkan tidak dapat dibatalkan.');
         }
 
-        DB::transaction(function () use ($order) {
-            $order->update([
-                'status' => 'cancelled',
-                'payment_status' => 'cancelled',
-            ]);
+        $order->update([
+            'status' => 'cancelled',
+            'payment_status' => 'cancelled',
+        ]);
 
-            foreach ($order->items as $item) {
-                if ($item->productVariant) {
-                    $item->productVariant->increment('stock', $item->quantity);
-                    $this->variantService->syncProductStock($item->product);
-                } else {
-                    $item->product->increment('stock', $item->quantity);
-                }
-            }
-        });
-
-        return redirect()->route('orders.show', $order)->with('success', 'Pesanan berhasil dibatalkan dan stok telah dikembalikan.');
+        return redirect()->route('orders.show', $order)->with('success', 'Pesanan berhasil dibatalkan.');
     }
 
     private function authorizeOrderOwner(Order $order): void

@@ -136,7 +136,7 @@ class ProductSizeVariantTest extends TestCase
             ]))
             ->assertRedirect();
 
-        $this->assertSame(1, $hundred->fresh()->stock);
+        $this->assertSame(2, $hundred->fresh()->stock);
         $this->assertSame(3, $thirty->fresh()->stock);
         $this->assertDatabaseHas('order_items', [
             'product_id' => $product->id,
@@ -188,7 +188,7 @@ class ProductSizeVariantTest extends TestCase
             ->assertRedirect();
 
         $this->assertSame(3, $thirty->fresh()->stock);
-        $this->assertSame(2, $fifty->fresh()->stock);
+        $this->assertSame(4, $fifty->fresh()->stock);
         $this->assertDatabaseHas('order_items', [
             'product_id' => $product->id,
             'product_variant_id' => $fifty->id,

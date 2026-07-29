@@ -4,12 +4,19 @@ namespace App\Services;
 
 use App\Models\Order;
 use Illuminate\Http\Client\RequestException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use RuntimeException;
 
 class MidtransService
 {
+    public function __construct(
+        private ?ProductVariantService $variantService = null
+    ) {
+        $this->variantService ??= app(ProductVariantService::class);
+    }
+
     public function ensureSnapTransaction(Order $order): Order
     {
         if ($order->midtrans_snap_token && $order->midtrans_redirect_url) {
@@ -68,15 +75,31 @@ class MidtransService
             'midtrans_payload' => $payload,
         ];
 
-        if ($order->payment_status !== 'paid' && $paymentStatus) {
-            $updates['payment_status'] = $paymentStatus;
+        DB::transaction(function () use ($order, $paymentStatus, &$updates) {
+            $isBecomingPaid = $order->payment_status !== 'paid' && $paymentStatus === 'paid';
 
-            if ($paymentStatus === 'paid') {
-                $updates['paid_at'] = now();
+            if ($order->payment_status !== 'paid' && $paymentStatus) {
+                $updates['payment_status'] = $paymentStatus;
+
+                if ($paymentStatus === 'paid') {
+                    $updates['paid_at'] = now();
+                }
             }
-        }
 
-        $order->forceFill($updates)->save();
+            $order->forceFill($updates)->save();
+
+            if ($isBecomingPaid) {
+                $order->loadMissing(['items.product', 'items.productVariant']);
+                foreach ($order->items as $item) {
+                    if ($item->productVariant) {
+                        $item->productVariant->decrement('stock', $item->quantity);
+                        $this->variantService->syncProductStock($item->product);
+                    } elseif ($item->product) {
+                        $item->product->decrement('stock', $item->quantity);
+                    }
+                }
+            }
+        });
 
         return $order->refresh();
     }
@@ -113,7 +136,7 @@ class MidtransService
     private function snapPayload(Order $order): array
     {
         $itemDetails = $this->itemDetails($order);
-        $grossAmount = collect($itemDetails)->sum(fn (array $item) => $item['price'] * $item['quantity']);
+        $grossAmount = (int) collect($itemDetails)->sum(fn (array $item) => $item['price'] * $item['quantity']);
 
         return [
             'transaction_details' => [
@@ -121,16 +144,19 @@ class MidtransService
                 'gross_amount' => $grossAmount,
             ],
             'customer_details' => [
-                'first_name' => $order->user?->name ?? 'Customer',
+                'first_name' => Str::limit($order->user?->name ?? 'Customer', 50, ''),
                 'email' => $order->user?->email,
                 'phone' => $order->phone ?? $order->user?->phone,
                 'shipping_address' => [
-                    'first_name' => $order->user?->name ?? 'Customer',
+                    'first_name' => Str::limit($order->user?->name ?? 'Customer', 50, ''),
                     'phone' => $order->phone ?? $order->user?->phone,
-                    'address' => $order->shipping_address,
+                    'address' => Str::limit($order->shipping_address ?? 'Alamat Pemesan', 200, ''),
                 ],
             ],
             'item_details' => $itemDetails,
+            'qris' => [
+                'acquirer' => 'gopay',
+            ],
             'credit_card' => [
                 'secure' => true,
             ],
@@ -145,11 +171,15 @@ class MidtransService
         $items = [];
 
         foreach ($order->items as $item) {
+            $rawId = $item->productVariant?->code ?: $item->product?->code ?: ('ITEM-' . $item->id);
+            $cleanId = preg_replace('/[^a-zA-Z0-9\-_.]/', '-', $rawId) ?: ('ITEM-' . $item->id);
+            $cleanName = preg_replace('/[^\w\s\-\.]/u', '', $item->product?->name ?? 'Produk Sayaka') ?: 'Produk Sayaka';
+
             $items[] = [
-                'id' => (string) ($item->product?->code ?: 'ITEM-' . $item->id),
+                'id' => Str::limit($cleanId, 50, ''),
                 'price' => (int) round((float) $item->price),
                 'quantity' => (int) $item->quantity,
-                'name' => Str::limit($item->product?->name ?? 'Produk Sayaka', 50, ''),
+                'name' => Str::limit(trim($cleanName), 50, ''),
             ];
         }
 
@@ -162,7 +192,7 @@ class MidtransService
                 'id' => 'SHIPPING',
                 'price' => $shippingCost,
                 'quantity' => 1,
-                'name' => Str::limit('Ongkos kirim ' . ($order->shipping_carrier ?: 'Sayaka Ship'), 50, ''),
+                'name' => 'Ongkos Kirim',
             ];
         }
 
@@ -217,7 +247,7 @@ class MidtransService
         return config('services.midtrans.server_key');
     }
 
-    private function isProduction(): bool
+    public function isProduction(): bool
     {
         return (bool) config('services.midtrans.is_production', false);
     }

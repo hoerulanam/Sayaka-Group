@@ -151,13 +151,6 @@ class CheckoutController extends Controller
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
                 ]);
-
-                if ($item['variant']) {
-                    $item['variant']->decrement('stock', $item['quantity']);
-                    $this->variantService->syncProductStock($item['product']);
-                } else {
-                    $item['product']->decrement('stock', $item['quantity']);
-                }
             }
 
             Cart::where('user_id', Auth::id())
@@ -275,13 +268,6 @@ class CheckoutController extends Controller
                 'quantity' => $validated['quantity'],
                 'price' => $price,
             ]);
-
-            if ($variant) {
-                $variant->decrement('stock', $validated['quantity']);
-                $this->variantService->syncProductStock($product);
-            } else {
-                $product->decrement('stock', $validated['quantity']);
-            }
 
             return $order;
         });

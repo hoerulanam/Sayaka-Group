@@ -69,6 +69,16 @@
                 <span class="nav-icon"><x-admin-icon name="orders" /></span>
                 <span>Kelola Pesanan</span>
             </a>
+            <a href="{{ route('admin.returns.index') }}" class="nav-link {{ Route::is('admin.returns.*') ? 'active' : '' }}">
+                <span class="nav-icon"><x-admin-icon name="inventory" /></span>
+                <span>Retur Barang</span>
+                @php
+                    $pendingReturnCount = \App\Models\OrderReturn::where('status', 'pending')->count();
+                @endphp
+                @if($pendingReturnCount > 0)
+                    <span style="background: #ef4444; color: #fff; border-radius: 999px; padding: 0.1rem 0.5rem; font-size: 0.75rem; margin-left: auto;">{{ $pendingReturnCount }}</span>
+                @endif
+            </a>
             <a href="{{ route('admin.chat.index') }}" class="nav-link {{ Route::is('admin.chat.*') ? 'active' : '' }}">
                 <span class="nav-icon"><x-admin-icon name="chat" /></span>
                 <span>Chat</span>

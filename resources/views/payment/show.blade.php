@@ -63,21 +63,20 @@
                         </button>
                     @endif
 
-                    @if($order->payment_status === 'expired')
-                        <form action="{{ route('payment.repay', $order) }}" method="POST" style="display:inline;">
-                            @csrf
-                            <button type="submit" class="btn btn-primary" style="border:none; padding:13px 22px; border-radius:999px; font-weight:800; cursor:pointer; background-color: #2563eb; color: white;">
-                                Pembayaran Ulang
-                            </button>
-                        </form>
-
-                        <form action="{{ route('payment.cancel', $order) }}" method="POST" style="display:inline;" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pesanan ini secara permanen?');">
+                    @if($order->payment_status !== 'paid' && $order->status !== 'cancelled')
+                        <form action="{{ route('payment.cancel', $order) }}" method="POST" style="display:inline;"
+                              data-confirm-title="Batalkan Pesanan Ini?"
+                              data-confirm-text="Pesanan {{ $order->displayCode() }} akan dibatalkan secara permanen."
+                              data-confirm-button="Ya, Batalkan Pesanan"
+                              data-confirm-color="#dc2626">
                             @csrf
                             <button type="submit" class="btn" style="border:none; padding:13px 22px; border-radius:999px; font-weight:800; cursor:pointer; background-color: #ef4444; color: white;">
                                 Batalkan Pesanan
                             </button>
                         </form>
-                    @else
+                    @endif
+
+                    @if($order->payment_status !== 'expired')
                         <form action="{{ route('payment.sync', $order) }}" method="POST" id="paymentSyncForm" style="display:inline;">
                             @csrf
                             <button type="submit" class="btn" style="background:#0f172a; color:#fff; border:none; padding:13px 22px; border-radius:999px; font-weight:800; cursor:pointer;">

@@ -42,7 +42,7 @@ class MidtransPaymentTest extends TestCase
         $this->assertSame('midtrans_snap', $order->payment_method);
         $this->assertSame('pending', $order->payment_status);
         $this->assertEquals(112000, (int) $order->total);
-        $this->assertSame(4, $product->fresh()->stock);
+        $this->assertSame(5, $product->fresh()->stock);
     }
 
     public function test_payment_page_creates_snap_token_and_renders_snap_popup_button(): void
@@ -81,7 +81,7 @@ class MidtransPaymentTest extends TestCase
     public function test_midtrans_notification_marks_order_as_paid_with_valid_signature(): void
     {
         $user = User::factory()->create();
-        [$order] = $this->createOrderWithItem($user, [
+        [$order, $product] = $this->createOrderWithItem($user, [
             'midtrans_order_id' => 'SYK-TEST-000001',
         ]);
 
@@ -101,6 +101,7 @@ class MidtransPaymentTest extends TestCase
         $this->assertSame('settlement', $order->midtrans_transaction_status);
         $this->assertSame('qris', $order->midtrans_payment_type);
         $this->assertNotNull($order->paid_at);
+        $this->assertSame(9, $product->fresh()->stock);
     }
 
     public function test_midtrans_notification_rejects_invalid_signature(): void
@@ -143,7 +144,7 @@ class MidtransPaymentTest extends TestCase
     public function test_user_can_sync_payment_status_from_midtrans_status_api(): void
     {
         $user = User::factory()->create();
-        [$order] = $this->createOrderWithItem($user, [
+        [$order, $product] = $this->createOrderWithItem($user, [
             'midtrans_order_id' => 'SYK-TEST-000004',
             'midtrans_snap_token' => 'snap-token-test',
             'midtrans_redirect_url' => 'https://app.sandbox.midtrans.com/snap/v2/vtweb/snap-token-test',
@@ -166,6 +167,7 @@ class MidtransPaymentTest extends TestCase
         $this->assertSame('paid', $order->payment_status);
         $this->assertSame('bank_transfer', $order->midtrans_payment_type);
         $this->assertNotNull($order->paid_at);
+        $this->assertSame(9, $product->fresh()->stock);
     }
 
     private function createProduct(string $name, int $price = 100000, int $stock = 10): Product

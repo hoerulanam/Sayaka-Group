@@ -12,6 +12,9 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\UserController;
 
+use App\Http\Controllers\OrderReturnController;
+use App\Http\Controllers\Admin\OrderReturnController as AdminOrderReturnController;
+
 // Breeze auth routes (sudah auto-generated)
 require __DIR__.'/auth.php';
 
@@ -31,6 +34,11 @@ Route::middleware(['auth', 'admin'])
             Route::patch('orders/{order}/confirm', [App\Http\Controllers\Admin\OrderController::class, 'confirm'])->name('orders.confirm');
             Route::patch('orders/{order}/ship', [App\Http\Controllers\Admin\OrderController::class, 'ship'])->name('orders.ship');
             Route::patch('orders/{order}/receive', [App\Http\Controllers\Admin\OrderController::class, 'receive'])->name('orders.receive');
+            Route::patch('orders/{order}/cancel', [App\Http\Controllers\Admin\OrderController::class, 'cancel'])->name('orders.cancel');
+            Route::get('returns', [AdminOrderReturnController::class, 'index'])->name('returns.index');
+            Route::patch('returns/{orderReturn}/approve', [AdminOrderReturnController::class, 'approve'])->name('returns.approve');
+            Route::patch('returns/{orderReturn}/reject', [AdminOrderReturnController::class, 'reject'])->name('returns.reject');
+            Route::patch('returns/{orderReturn}/complete', [AdminOrderReturnController::class, 'complete'])->name('returns.complete');
             Route::get('chat', [App\Http\Controllers\Admin\MessageController::class, 'index'])->name('chat.index');
             Route::get('chat/{user}', [App\Http\Controllers\Admin\MessageController::class, 'chat'])->name('chat.show');
             Route::post('chat/send', [App\Http\Controllers\Admin\MessageController::class, 'send'])->name('chat.send');
@@ -80,6 +88,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/checkout/direct/{product}', [App\Http\Controllers\CheckoutController::class, 'direct'])->name('checkout.direct');
     Route::get('/orders', [App\Http\Controllers\OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [App\Http\Controllers\OrderController::class, 'show'])->name('orders.show');
+    Route::post('/orders/{order}/return', [OrderReturnController::class, 'store'])->name('orders.return.store');
+    Route::patch('/orders/{order}/return/bank', [OrderReturnController::class, 'updateBankDetails'])->name('orders.return.bank.update');
     Route::post('/orders/{order}/items/{orderItem}/review', [ProductReviewController::class, 'store'])->name('orders.items.review.store');
     Route::get('/payment/{order}', [PaymentController::class, 'show'])->name('payment.show');
     Route::post('/payment/{order}/sync', [PaymentController::class, 'sync'])->name('payment.sync');

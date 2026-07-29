@@ -24,7 +24,7 @@ class OrderController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $order->load(['items.product', 'items.productVariant', 'items.review']);
+        $order->load(['items.product', 'items.productVariant', 'items.review', 'orderReturn', 'returns']);
 
         return view('orders.show', compact('order'));
     }

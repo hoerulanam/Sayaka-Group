@@ -44,6 +44,13 @@
                             <button type="submit" class="btn" style="background:#6c757d;color:#fff;padding:5px 10px;border:none;border-radius:4px;">Terima</button>
                         </form>
                     @endif
+
+                    @if(in_array($order->status, ['pending', 'confirmed'], true))
+                        <form action="{{ route('admin.orders.cancel', $order) }}" method="post" style="display:inline;" data-confirm-title="Batalkan pesanan?" data-confirm-text="Pesanan #{{ $order->id }} akan dibatalkan. Jika pesanan sudah dibayar, stok produk akan dikembalikan.">
+                            @csrf @method('PATCH')
+                            <button type="submit" class="btn" style="background:#dc3545;color:#fff;padding:5px 10px;border:none;border-radius:4px;">Batalkan</button>
+                        </form>
+                    @endif
                 </td>
             </tr>
         @empty

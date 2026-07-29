@@ -237,7 +237,7 @@ class FixedProductCapacityTest extends TestCase
             'selected_color' => 'Hitam',
             'quantity' => 1,
         ]);
-        $this->assertSame(4, $hitam->fresh()->stock);
+        $this->assertSame(5, $hitam->fresh()->stock);
         $this->assertSame(4, $putih->fresh()->stock);
     }
 
@@ -293,7 +293,7 @@ class FixedProductCapacityTest extends TestCase
             ])
             ->assertRedirect();
 
-        $this->assertSame(1, $kuning->fresh()->stock);
+        $this->assertSame(2, $kuning->fresh()->stock);
         $this->assertSame(5, $hitam->fresh()->stock);
         $this->assertDatabaseHas('order_items', [
             'product_id' => $product->id,
